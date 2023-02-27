@@ -6,6 +6,7 @@ import (
 	"github.com/patrickmn/go-cache"
 	GetOrdersByB24 "parser"
 	"parser/scraper"
+	"strings"
 	"time"
 )
 
@@ -56,14 +57,41 @@ func parseHabr(jsonBuffer []byte) ([]scraper.Habr, error) {
 var Input string
 var Href string
 
+var ArrayWithoutDuplicates = make([]string, 0)
+
 func main() {
 
 	err := GetOrdersByB24.VisitHrefs(Url)
 	if err != nil {
 		fmt.Println(err.Error())
+		//fmt.Println("whats going on?")
 		return
 	}
+	//fmt.Println("FULL ARRAY", GetOrdersByB24.FullArray)
+	withoutDuplicates := removeDuplicateStr(GetOrdersByB24.FullArray)
+	for _, v := range withoutDuplicates {
+		if strings.HasPrefix(v, "https://onviz.bitrix24") {
+			ArrayWithoutDuplicates = append(ArrayWithoutDuplicates, v)
+			//fmt.Println(v)
+		}
+	}
+	for _, v := range ArrayWithoutDuplicates {
+		fmt.Println(v)
+	}
+	//fmt.Println(ArrayWithoutDuplicates)
+	fmt.Println("end")
+}
 
+func removeDuplicateStr(strSlice []string) []string {
+	allKeys := make(map[string]bool)
+	list := []string{}
+	for _, item := range strSlice {
+		if _, value := allKeys[item]; !value {
+			allKeys[item] = true
+			list = append(list, item)
+		}
+	}
+	return list
 }
 
 /*func OldMain(){

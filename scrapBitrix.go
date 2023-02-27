@@ -22,6 +22,8 @@ func GenerateUrl(inn string) (url string) {
 	}
 }*/
 
+var FullArray = make([]string, 0)
+
 func VisitMainPage(url string) (text string, urls []string, err error) {
 	c := colly.NewCollector()
 
@@ -31,7 +33,7 @@ func VisitMainPage(url string) (text string, urls []string, err error) {
 		text = e.Text
 		absoluteURL := e.Request.AbsoluteURL(e.Attr("href"))
 		urls = append(urls, absoluteURL)
-
+		FullArray = append(FullArray, absoluteURL)
 		//fmt.Println(urls) //array with all HREFS
 	})
 
@@ -43,35 +45,49 @@ func VisitMainPage(url string) (text string, urls []string, err error) {
 	return text, urls, err
 }
 
+func remove(s []int, i int) []int {
+	s[i] = s[len(s)-1]
+	return s[:len(s)-1]
+}
+
 func VisitHrefs(url string) error {
 	c := colly.NewCollector()
 	//fmt.Println(VisitMainPage(url))
 	_, getUrls, err := VisitMainPage(url)
 	if err != nil {
+		//fmt.Println("error visit Main Page")
 		fmt.Println(err.Error())
 	}
-
+	//	fmt.Println("GET URLS", getUrls)
 	for _, v := range getUrls {
-		fmt.Println("VVVVVVVVVV", v)
-		c.OnHTML("a[href]", func(e *colly.HTMLElement) {
-			fmt.Println(e.Text)
-			absoluteURL := e.Request.AbsoluteURL(e.Attr("href"))
-			absoluteTitle := e.Request.AbsoluteURL(e.ChildText("href"))
-			fmt.Println(absoluteURL, absoluteTitle)
-			if strings.Contains(e.Text, "регулировка") {
-				fmt.Println("THIS FOUND: регулировка", absoluteURL)
-				return
-			}
-			fmt.Println(e.Text)
-			//fmt.Println(urls) //array with all HREFS
-		})
 
 		err = c.Visit(v)
 		if err != nil {
 			log.Println(err.Error())
-			return err
+			//		fmt.Println("error visit URL")
+			continue
 		}
 		fmt.Println(v)
+
+		//	fmt.Println("error here")
+		//	fmt.Println("VVVVVVVVVV", v)
+		c.OnHTML("a[href]", func(e *colly.HTMLElement) {
+			//	fmt.Println(e.Text)
+			absoluteURL := e.Request.AbsoluteURL(e.Attr("href"))
+
+			if strings.HasPrefix(v, "https://onviz.bitrix24") {
+				FullArray = append(FullArray, absoluteURL)
+			}
+
+			//	absoluteTitle := e.Request.AbsoluteURL(e.ChildText("href"))
+			//	fmt.Println(absoluteURL, absoluteTitle)
+			if strings.Contains(e.Text, "регулировка") {
+				//		fmt.Println("THIS FOUND: регулировка", absoluteURL)
+				return
+			}
+			//	fmt.Println(e.Text)
+			//fmt.Println(urls) //array with all HREFS
+		})
 
 	}
 
