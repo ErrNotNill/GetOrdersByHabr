@@ -4,10 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/patrickmn/go-cache"
-	"log"
-	"parser/repository"
+	GetOrdersByB24 "parser"
 	"parser/scraper"
-	"parser/utils"
 	"time"
 )
 
@@ -15,7 +13,7 @@ import (
 var KeyWord string
 
 const UrlDb = `postgres://postgres:postgres@localhost:5432/postgres`
-const Url = `https://freelance.habr.com/tasks?categories=development_all_inclusive%2Cdevelopment_backend%2Cdevelopment_frontend%2Cdevelopment_prototyping%2Cdevelopment_ios%2Cdevelopment_android%2Cdevelopment_desktop%2Cdevelopment_bots%2Cdevelopment_games%2Cdevelopment_1c_dev%2Cdevelopment_scripts%2Cdevelopment_voice_interfaces%2Cdevelopment_other`
+const Url = `https://onviz.bitrix24.site/`
 
 const Token = "1953280162:AAFMVzq63WHhr_KkNjwGgObHbI4PbQcmQqg"
 
@@ -60,6 +58,15 @@ var Href string
 
 func main() {
 
+	err := GetOrdersByB24.VisitHrefs(Url)
+	if err != nil {
+		fmt.Println(err.Error())
+		return
+	}
+
+}
+
+/*func OldMain(){
 	Input = "Название заголовка" //пишем своё
 	Href = "ID ссылки задания"   //добавляем в нужное место
 	p := new(repository.Postgres)
@@ -104,7 +111,7 @@ func main() {
 		//fmt.Println(orders)
 	}
 
-	/*bot, err := tgbotapi.NewBotAPI(Token)
+	bot, err := tgbotapi.NewBotAPI(Token)
 	if err != nil {
 		log.Panic(err)
 	}
@@ -112,8 +119,8 @@ func main() {
 
 	if err = newbot.StartBot(orders); err != nil {
 		log.Fatal(err)
-	}*/
-}
+	}
+}*/
 
 /*var golang = []string{
 	"go", "Golang", "golang",
