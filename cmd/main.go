@@ -3,9 +3,11 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/gocolly/colly/v2"
 	"github.com/patrickmn/go-cache"
-	GetOrdersByB24 "parser"
+	"log"
 	"parser/scraper"
+	"parser/urls"
 	"strings"
 	"time"
 )
@@ -59,27 +61,124 @@ var Href string
 
 var ArrayWithoutDuplicates = make([]string, 0)
 
-func main() {
+var bigFullArray = make([]string, 0)
 
-	err := GetOrdersByB24.VisitHrefs(Url)
-	if err != nil {
-		fmt.Println(err.Error())
-		//fmt.Println("whats going on?")
-		return
+var lastestArray = make([]string, 0)
+
+func ifPrefix(absoluteURL string) (b bool) {
+
+	switch false {
+	case strings.HasPrefix(absoluteURL, "https://www"):
+		b = false
+	case strings.HasPrefix(absoluteURL, "https://b24"):
+		b = false
+	case strings.HasPrefix(absoluteURL, "mailto"):
+		b = false
+	case strings.HasPrefix(absoluteURL, "tel"):
+		b = false
+	case strings.HasPrefix(absoluteURL, "https://b24"):
+		b = false
+	case strings.HasPrefix(absoluteURL, "https://b24"):
+		b = false
+
 	}
-	//fmt.Println("FULL ARRAY", GetOrdersByB24.FullArray)
-	withoutDuplicates := removeDuplicateStr(GetOrdersByB24.FullArray)
-	for _, v := range withoutDuplicates {
-		if strings.HasPrefix(v, "https://onviz.bitrix24") {
-			ArrayWithoutDuplicates = append(ArrayWithoutDuplicates, v)
-			//fmt.Println(v)
+	return true
+
+}
+
+type Hrefs struct {
+	href string
+}
+
+func checkForValue(userValue int, students map[string]int) string {
+	//traverse through the map
+	for key, value := range students {
+		//check if present value is equals to userValue
+		if value == userValue {
+			//if same return true
+			return key
 		}
 	}
-	for _, v := range ArrayWithoutDuplicates {
+	//if value not found return false
+	return ""
+}
+
+/*func SearchEverywhere(sites map[string]int) {
+	c := colly.NewCollector()
+	for k, _ := range sites {
+
+	}
+}*/
+
+func main() {
+
+	//var newMap = make(map[string]string)
+
+	//collectionFoundedHrefs := make([]string,0)
+
+	newFullArr := make([]string, 0)
+
+	for k, _ := range urls.IndexSites {
+
+		var fullData string
+
+		//firstSite := checkForValue(1, urls.IndexSites)
+
+		c := colly.NewCollector()
+		c.OnHTML("a[href]", func(e *colly.HTMLElement) {
+			//	fmt.Println(e.Text)
+			//fmt.Println(e.Text, "VisitMainPAGE")
+			absoluteURL := e.Request.AbsoluteURL(e.Attr("href"))
+			//fmt.Println(fullData)
+			fullData = e.Text
+			//fmt.Println(fullData)
+
+			founded := searchString(fullData, "Сборка")
+			if founded == true {
+
+				fullDataPlus := fmt.Sprintf("%v %v", fullData, absoluteURL)
+				//newMap[fullData] = absoluteURL
+				newFullArr = append(newFullArr, fullDataPlus)
+				//fmt.Println(fullData, "FULLDATA")
+				//fmt.Println(absoluteURL)
+				//return
+			} else {
+				//count = count + 1
+				//return
+				//firstSite
+				//fmt.Println("no keyword here")
+				//return
+			}
+
+		})
+
+		err := c.Visit(k)
+		if err != nil {
+			log.Println(err.Error())
+		}
+	}
+
+	for _, v := range newFullArr {
 		fmt.Println(v)
 	}
-	//fmt.Println(ArrayWithoutDuplicates)
-	fmt.Println("end")
+
+}
+
+func search(docs []string, term string) []string {
+	var r []string
+	for _, doc := range docs {
+		if strings.Contains(doc, term) {
+			r = append(r, doc)
+			break
+		}
+	}
+	return r
+}
+func searchString(fullText string, keyword string) bool {
+	if strings.Contains(fullText, keyword) {
+		return true
+	}
+	return false
 }
 
 func removeDuplicateStr(strSlice []string) []string {
@@ -93,6 +192,153 @@ func removeDuplicateStr(strSlice []string) []string {
 	}
 	return list
 }
+
+func VisitLastHrefs(lA []string) (text string, urls []string, err error) {
+	c := colly.NewCollector()
+
+	for _, vUrl := range lA {
+
+		c.OnHTML("a[href]", func(e *colly.HTMLElement) {
+			absoluteURL := e.Request.AbsoluteURL(e.Attr("href"))
+			urls = append(urls, absoluteURL)
+			//fmt.Println(urls) //array with all HREFS
+		})
+
+		err = c.Visit(vUrl)
+		if err != nil {
+			log.Println(err.Error())
+			return "", nil, err
+		}
+		return text, urls, err
+	}
+	urls = make([]string, 0)
+	return "", urls, err
+}
+
+func VisitNextHrefs() {
+	c := colly.NewCollector()
+
+	for _, v := range ArrayWithoutDuplicates {
+
+		err := c.Visit(v)
+		if err != nil {
+			log.Println(err.Error())
+			//		fmt.Println("error visit URL")
+			continue
+		}
+
+		c.OnHTML("a[href]", func(e *colly.HTMLElement) {
+
+			absoluteURL := e.Request.AbsoluteURL(e.Attr("href"))
+
+			ArrayWithoutDuplicates = append(ArrayWithoutDuplicates, absoluteURL)
+		})
+
+	}
+
+}
+
+/*func LastMain(){
+	var fullData string
+	var count = 1
+	firstSite := checkForValue(count, urls.IndexSites)
+	c := colly.NewCollector()
+	c.OnHTML("a[href]", func(e *colly.HTMLElement) {
+		//	fmt.Println(e.Text)
+		//fmt.Println(e.Text, "VisitMainPAGE")
+		absoluteURL := e.Request.AbsoluteURL(e.Attr("href"))
+
+		fullData = e.Text
+		//fmt.Println(fullData)
+
+		founded := searchString(fullData, "Сборка")
+		if founded == true {
+			fmt.Println(fullData, "FULLDATA")
+			fmt.Println(absoluteURL)
+		} else {
+			count = count + 1
+			//firstSite
+			//fmt.Println("no keyword here")
+		}
+
+	})
+
+	err := c.Visit(firstSite)
+	if err != nil {
+		log.Println(err.Error())
+	}
+
+	//HERE is Scan of all hrefs
+	for v, _ := range urls.IndexSites {
+		c := colly.NewCollector()
+
+		c.OnHTML("a[href]", func(e *colly.HTMLElement) {
+			//	fmt.Println(e.Text)
+			//fmt.Println(e.Text, "VisitMainPAGE")
+			absoluteURL := e.Request.AbsoluteURL(e.Attr("href"))
+
+			fullData = e.Text
+			//fmt.Println(fullData)
+
+			founded := searchString(fullData, "Сборка")
+			if founded == true {
+				fmt.Println(fullData, "FULLDATA")
+				fmt.Println(absoluteURL)
+			} else {
+				fmt.Println("no keyword here")
+			}
+
+		})
+
+		err := c.Visit(v)
+		if err != nil {
+			log.Println(err.Error())
+		}
+	}
+
+	//HERE all hrefs in Massive
+	newArr := make([]string, 0)
+	for v, _ := range urls.IndexSites {
+
+		c := colly.NewCollector()
+
+		c.OnHTML("a[href]", func(e *colly.HTMLElement) {
+			//	fmt.Println(e.Text)
+			//fmt.Println(e.Text, "VisitMainPAGE")
+			absoluteURL := e.Request.AbsoluteURL(e.Attr("href"))
+
+			if strings.HasPrefix(absoluteURL, `https://onviz`) {
+				newArr = append(newArr, absoluteURL)
+			}
+
+			//fmt.Println(absoluteURL)
+			//fmt.Println(urls) //array with all HREFS
+		})
+
+		//withoutDupls := removeDuplicateStr(newArr)
+
+		founded := search(newArr, "alisa")
+
+		//foundedWithoutDuplicates := removeDuplicateStr(founded)
+
+		//newF := removeDuplicateStr(founded)
+
+		fmt.Println(founded)
+
+		/*
+			for _, v := range withoutDupls {
+				fmt.Println(v)
+			}
+
+		err := c.Visit(v)
+		if err != nil {
+			log.Println(err.Error())
+		}
+	}
+
+	fmt.Println(len(newArr))
+}
+*/
 
 /*func OldMain(){
 	Input = "Название заголовка" //пишем своё
@@ -171,3 +417,74 @@ var mm scraper.Habr
 ja2, _ := json.Marshal(habr2)
 json.Unmarshal(ja2, &mm)
 fmt.Println(string(ja2))*/
+
+/*func oldMain(){
+	err := GetOrdersByB24.VisitHrefs(Url)
+
+	if err != nil {
+		fmt.Println(err.Error())
+		//fmt.Println("whats going on?")
+		return
+	}
+	//fmt.Println("FULL ARRAY", GetOrdersByB24.FullArray)
+	withoutDuplicates := removeDuplicateStr(GetOrdersByB24.FullArray)
+	for _, v := range withoutDuplicates {
+		if strings.HasPrefix(v, "https://onviz.bitrix24") {
+			ArrayWithoutDuplicates = append(ArrayWithoutDuplicates, v)
+			bigFullArray = append(bigFullArray, v)
+		}
+	}
+
+	//	for _, v := range ArrayWithoutDuplicates {
+	//	fmt.Println(v)
+	//}
+
+	//fmt.Println(ArrayWithoutDuplicates)
+
+	VisitNextHrefs()
+
+	rmvDupls := removeDuplicateStr(ArrayWithoutDuplicates)
+	//urlsNew := make([]string, 0)
+	for _, v := range rmvDupls {
+
+		c := colly.NewCollector()
+
+		c.OnHTML("a[href]", func(e *colly.HTMLElement) {
+			//absoluteURL := e.Request.AbsoluteURL(e.Attr("href"))
+			//urlsNew = append(urlsNew, absoluteURL)
+			if strings.HasPrefix(v, "https://onviz.bitrix24") {
+				//urlsNew = append(urlsNew, v)
+				bigFullArray = append(bigFullArray, v)
+
+			}
+
+		})
+
+		err = c.Visit(v)
+		if err != nil {
+			log.Println(err.Error())
+		}
+		//fmt.Println(urlsNew)
+	}
+
+	//newRemovedDupls := removeDuplicateStr(urlsNew)
+
+	//for _, v := range newRemovedDupls {
+	//fmt.Println(v)
+	//}
+
+	removed := removeDuplicateStr(bigFullArray)
+	for _, v := range removed {
+
+		lastestArray = append(lastestArray, v)
+
+		//fmt.Println(v)
+	}
+	for _, v := range lastestArray {
+		fmt.Println(v)
+	}
+
+	fmt.Println(len(lastestArray))
+
+	fmt.Println("end")
+}*/

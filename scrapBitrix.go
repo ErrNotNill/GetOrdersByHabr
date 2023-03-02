@@ -29,8 +29,8 @@ func VisitMainPage(url string) (text string, urls []string, err error) {
 
 	urls = make([]string, 0)
 	c.OnHTML("a[href]", func(e *colly.HTMLElement) {
-		fmt.Println(e.Text)
-		text = e.Text
+		//	fmt.Println(e.Text)
+		fmt.Println(e.Text, "VisitMainPAGE")
 		absoluteURL := e.Request.AbsoluteURL(e.Attr("href"))
 		urls = append(urls, absoluteURL)
 		FullArray = append(FullArray, absoluteURL)
@@ -67,26 +67,18 @@ func VisitHrefs(url string) error {
 			//		fmt.Println("error visit URL")
 			continue
 		}
-		fmt.Println(v)
+		//	fmt.Println(v)
 
 		//	fmt.Println("error here")
 		//	fmt.Println("VVVVVVVVVV", v)
 		c.OnHTML("a[href]", func(e *colly.HTMLElement) {
 			//	fmt.Println(e.Text)
 			absoluteURL := e.Request.AbsoluteURL(e.Attr("href"))
-
+			fmt.Println(e.Text, "VisitHREFS")
 			if strings.HasPrefix(v, "https://onviz.bitrix24") {
 				FullArray = append(FullArray, absoluteURL)
 			}
 
-			//	absoluteTitle := e.Request.AbsoluteURL(e.ChildText("href"))
-			//	fmt.Println(absoluteURL, absoluteTitle)
-			if strings.Contains(e.Text, "регулировка") {
-				//		fmt.Println("THIS FOUND: регулировка", absoluteURL)
-				return
-			}
-			//	fmt.Println(e.Text)
-			//fmt.Println(urls) //array with all HREFS
 		})
 
 	}
