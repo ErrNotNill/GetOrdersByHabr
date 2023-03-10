@@ -147,9 +147,10 @@ func main() {
 	}
 }
 
-func Par(input string) (text []string, hrefs []string, rmvdDupls []string, data *FullData) {
+func Par(input string) (text []string, hrefs []string, rmvdDupls []string) {
 	newFullArr := make([]string, 0)
 	hrefsArray := make([]string, 0)
+	textArray := make([]string, 0)
 
 	textArr := make([]string, 0)
 	hrefsArr := make([]string, 0)
@@ -173,7 +174,7 @@ func Par(input string) (text []string, hrefs []string, rmvdDupls []string, data 
 			founded := searchString(fullData, input)
 			if founded == true {
 
-				data = &FullData{Title: fullData, Hrefs: absoluteURL}
+				//data = &FullData{Title: fullData, Hrefs: absoluteURL}
 
 				textArr = append(textArr, fullData)
 				hrefsArr = append(hrefsArr, absoluteURL)
@@ -185,6 +186,7 @@ func Par(input string) (text []string, hrefs []string, rmvdDupls []string, data 
 				if strings.Contains(fullDataPlus, "http") {
 					newFullArr = append(newFullArr, fullDataPlus)
 					hrefsArray = append(hrefsArray, k)
+					textArray = append(textArray, e.Text)
 				}
 
 				//fmt.Println(newFullArr)
@@ -204,7 +206,7 @@ func Par(input string) (text []string, hrefs []string, rmvdDupls []string, data 
 
 	//here we get massive with title and hrefs
 
-	return text, hrefs, rmvdDupls, data
+	return textArray, hrefsArray, rmvdDupls
 }
 
 func newTestHandleFunc(w http.ResponseWriter, r *http.Request) {
@@ -242,51 +244,53 @@ func testHandleFunc(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("Error parsefile form.html")
 	}
 
-	//TextArray, hrefsArray := Par(UrlName)
+	TextArray, hrefsArray, _ := Par(UrlName)
 
-	_, _, rmvDupls, data := Par(UrlName)
+	//_, _, rmvDupls := Par(UrlName)
 
-	var Linked string
-	var Title string
+	//var Linked string
+	//var Title string
 
-	var ArrTitle = make([]string, 0)
-	var ArrLink = make([]string, 0)
+	//var ArrTitle = make([]string, 0)
+	//var ArrLink = make([]string, 0)
 
 	//var CreatedLink string
 
-	for _, text := range rmvDupls {
+	//for _, text := range rmvDupls {
 
-		//index := strings.Index(text,"https")
+	//index := strings.Index(text,"https")
 
-		strFields := strings.Fields(text)
-		//fmt.Println("STRFIELDS", strFields)
+	//	strFields := strings.Fields(text)
+	//fmt.Println("STRFIELDS", strFields)
 
-		Linked = strFields[len(strFields)-1]
-		//fmt.Println("TITLE", Linked)
-		//Text = strFields[len(strFields)-]
+	//	Linked = strFields[len(strFields)-1]
+	//fmt.Println("TITLE", Linked)
+	//Text = strFields[len(strFields)-]
 
-		ArrTitle = append(ArrTitle, Linked)
-		if strings.Contains(text, "https") {
-			Title = text
-			//fmt.Println("LINK", Title)
-			ArrLink = append(ArrLink, Title)
-		}
+	//ArrTitle = append(ArrTitle, Linked)
+	//	if strings.Contains(text, "https") {
+	//		Title = text
+	//fmt.Println("LINK", Title)
+	//		ArrLink = append(ArrLink, Title)
+	//	}
 
-		//CreatedLink = fmt.Sprintf(`<a href="%s"> %s</a>`, Title, Linked)
+	//CreatedLink = fmt.Sprintf(`<a href="%s"> %s</a>`, Title, Linked)
 
-		//CreateLink = strFields[1]
-		//ShowText = strFields[0]
+	//CreateLink = strFields[1]
+	//ShowText = strFields[0]
 
-	}
+	//}
 
-	fmt.Println(rmvDupls)
+	//fmt.Println(rmvDupls)
 
 	//SomeArr := make([]string, 0)
 
 	//SomeArr = append(SomeArr, data.Title, data.Hrefs)
 
-	if data != nil {
-		data = &FullData{Hrefs: Href, SomeArr: rmvDupls, Available: true}
+	data := &ViewData{Available: false}
+
+	if UrlName != "" && len(UrlName) > 1 && TextArray != nil && hrefsArray != nil {
+		data = &ViewData{Title: TextArray, Link: hrefsArray, Available: true}
 	}
 
 	err = ts.Execute(w, data)
