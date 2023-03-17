@@ -17,9 +17,9 @@ import (
 	"strings"
 )
 
-var SecretKey = "AA1379657aa"
-var Token = "vk1.a.uuGYW0HLLXGopIeCS0mwuHG6GnuBJwDMa8GaYgIwy07nKgjNRrE-gTUUg868oQvep7pjozOiTixAD9j_CpZXgxbCY37NFWoIm392Mxp41-4XfX6U_fhOXH2fg_o50dbGIJtRCNsH7J8YdHNxwcVYOhHC24X2lCqf8YghKs8FWJa4r7sW6u7qK4W_3CR2uSnT3hiXR9azxqjp8ZW89VyMSQ"
-var ConfirmationToken = "1ee66a1c"
+var SecretKey = ""
+var Token = ""
+var ConfirmationToken = ""
 
 var newUserId int
 var newPostId int
@@ -39,7 +39,7 @@ type Fields struct {
 const UrlDb = `postgres://postgres:postgres@localhost:5432/postgres`
 const Url = `https://onviz.bitrix24.site/`
 
-const TokenUnknown = "1953280162:AAFMVzq63WHhr_KkNjwGgObHbI4PbQcmQqg"
+const TokenUnknown = ""
 
 var Input string
 var Href string
@@ -125,7 +125,7 @@ func main() {
 		r := bytes.NewReader(jsnm)
 
 		if obj.FromID != 628998745 {
-			_, err = http.Post("https://onviz.bitrix24.ru/rest/13938/pqq6j4ohvutvzfmi/crm.lead.add", "application/json", r)
+			_, err = http.Post("https://onviz.bitrix24.ru/rest/13938/{{TOKEN}}/crm.lead.add", "application/json", r)
 			if err != nil {
 				log.Println("Error http:post request to Bitrix24")
 			}
